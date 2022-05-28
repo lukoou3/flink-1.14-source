@@ -210,6 +210,12 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
             KafkaDeserializationSchema<T> deserializer,
             Properties props) {
 
+        /**
+         * 主构造函数，open方法在父类FlinkKafkaConsumerBase中
+         * @see FlinkKafkaConsumerBase#open
+         * 调用父类FlinkKafkaConsumerBase
+         * discoveryIntervalMillis: 自动分区发现
+         */
         super(
                 topics,
                 subscriptionPattern,
@@ -221,6 +227,8 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
                 !getBoolean(props, KEY_DISABLE_METRICS, false));
 
         this.properties = props;
+        // 这里统一使用org.apache.kafka.common.serialization.ByteArrayDeserializer作为kafka的反序列化器
+        // 然后用再用flink的KafkaDeserializationSchema处理
         setDeserializer(this.properties);
 
         // configure the polling timeout
@@ -228,6 +236,7 @@ public class FlinkKafkaConsumer<T> extends FlinkKafkaConsumerBase<T> {
             if (properties.containsKey(KEY_POLL_TIMEOUT)) {
                 this.pollTimeout = Long.parseLong(properties.getProperty(KEY_POLL_TIMEOUT));
             } else {
+                // 默认100
                 this.pollTimeout = DEFAULT_POLL_TIMEOUT;
             }
         } catch (Exception e) {
