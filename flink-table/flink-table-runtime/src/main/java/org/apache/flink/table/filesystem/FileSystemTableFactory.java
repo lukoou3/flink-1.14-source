@@ -69,8 +69,11 @@ public class FileSystemTableFactory implements DynamicTableSourceFactory, Dynami
         validate(helper);
         return new FileSystemTableSource(
                 context,
+                // DecodingFormat<BulkFormat<RowData, FileSourceSplit>>
                 discoverDecodingFormat(context, BulkReaderFormatFactory.class),
+                //  DecodingFormat<DeserializationSchema<RowData>> deserializationFormat
                 discoverDecodingFormat(context, DeserializationFormatFactory.class),
+                // FileSystemFormatFactory
                 discoverFormatFactory(context));
     }
 

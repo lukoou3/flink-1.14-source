@@ -1816,6 +1816,7 @@ object ScalarOperatorGens {
       greatest: Boolean = true)
   : GeneratedExpression = {
     val Seq(result, cur, nullTerm) = newNames("result", "cur", "nullTerm")
+    // findCommonType
     val widerType = toScala(findCommonType(elements.map(element => element.resultType)))
       .orElse(throw new CodeGenException(s"Unable to find common type for $elements."))
     val resultTypeTerm = boxedTypeTermForType(widerType.get)

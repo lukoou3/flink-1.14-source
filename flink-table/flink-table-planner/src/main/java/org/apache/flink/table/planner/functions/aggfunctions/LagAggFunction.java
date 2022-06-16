@@ -44,7 +44,7 @@ public class LagAggFunction<T> extends BuiltInAggregateFunction<T, LagAggFunctio
     public LagAggFunction(LogicalType[] valueTypes) {
         this.valueDataTypes =
                 Arrays.stream(valueTypes)
-                        .map(DataTypeUtils::toInternalDataType)
+                        .map(DataTypeUtils::toInternalDataType)//这里就是直接提示使用内部类型
                         .toArray(DataType[]::new);
         if (valueDataTypes.length == 3
                 && valueDataTypes[2].getLogicalType().getTypeRoot() != LogicalTypeRoot.NULL) {

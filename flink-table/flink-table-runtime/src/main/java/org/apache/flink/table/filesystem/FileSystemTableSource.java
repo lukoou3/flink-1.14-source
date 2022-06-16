@@ -89,6 +89,7 @@ public class FileSystemTableSource extends AbstractFileSystemTable
             @Nullable DecodingFormat<DeserializationSchema<RowData>> deserializationFormat,
             @Nullable FileSystemFormatFactory formatFactory) {
         super(context);
+        // 没找到支持的format
         if (Stream.of(bulkReaderFormat, deserializationFormat, formatFactory)
                 .allMatch(Objects::isNull)) {
             Configuration options = Configuration.fromMap(context.getCatalogTable().getOptions());
@@ -106,9 +107,11 @@ public class FileSystemTableSource extends AbstractFileSystemTable
     @Override
     public ScanRuntimeProvider getScanRuntimeProvider(ScanContext scanContext) {
         if (!partitionKeys.isEmpty() && getOrFetchPartitions().isEmpty()) {
+            // 没有分区却过滤分区，直接返回空source
             // When this table has no partition, just return a empty source.
             return InputFormatProvider.of(new CollectionInputFormat<>(new ArrayList<>(), null));
         } else if (bulkReaderFormat != null) {
+            // bulkReaderFormat, orc , parquet
             if (bulkReaderFormat instanceof BulkDecodingFormat
                     && filters != null
                     && filters.size() > 0) {
@@ -118,6 +121,7 @@ public class FileSystemTableSource extends AbstractFileSystemTable
                     bulkReaderFormat.createRuntimeDecoder(scanContext, getProducedDataType());
             return createSourceProvider(bulkFormat);
         } else if (formatFactory != null) {
+            // 通过formatFactory获取
             // The ContinuousFileMonitoringFunction can not accept multiple paths. Default
             // StreamEnv.createInput will create continuous function.
             // Avoid using ContinuousFileMonitoringFunction.
@@ -127,6 +131,7 @@ public class FileSystemTableSource extends AbstractFileSystemTable
                             InternalTypeInfo.of(getProducedDataType().getLogicalType())),
                     true);
         } else if (deserializationFormat != null) {
+            // 注意，我们需要将完整格式类型传递给反序列化格式
             // NOTE, we need pass full format types to deserializationFormat
             DeserializationSchema<RowData> decoder =
                     deserializationFormat.createRuntimeDecoder(scanContext, getFormatDataType());
